@@ -91,7 +91,7 @@ int main() {
   fsck_ret = system("e2fsck -p /dev/disk/by-partlabel/" PART_NAME);
   if (fsck_ret != 0 && fsck_ret != 1) {
     fprintf(stderr, "User data partition is not initialized or corrupt. Formatting now...\n");
-    mkfs_ret = system("mke2fs -F /dev/disk/by-partlabel/" PART_NAME);
+    mkfs_ret = system("mke2fs -t ext4 -F /dev/disk/by-partlabel/" PART_NAME);
     if (mkfs_ret != 0) {
       fprintf(stderr, "Failed to format partition\n");
       ret = 2;
