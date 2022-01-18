@@ -29,8 +29,7 @@ int main() {
     return 1;
   }
 
-  printf ("Model: %s (%d)\n",
-          emmc->model, emmc->type);
+  fprintf(stderr, "Model: %s (%d)\n", emmc->model, emmc->type);
 
   if (strcmp(emmc->model, "MMC 4FTE4R") != 0) {
     fprintf(stderr, "Wrong MMC model %s\n", emmc->model);
