@@ -15,6 +15,9 @@ exception_handler (PedException* ex)
   return PED_EXCEPTION_UNHANDLED;
 }
 
+#define PART_NAME "smartcross_userdata"
+#define PART_PATH "/dev/disk/by-partlabel/" PART_NAME
+
 int main() {
   int ret, fsck_ret, mkfs_ret;
   ped_exception_set_handler(exception_handler);
@@ -40,8 +43,6 @@ int main() {
   PedSector user_partition_start, user_partition_end;
   ped_unit_parse("2100MB", emmc, &user_partition_start, NULL);
   ped_unit_parse("3900MB", emmc, &user_partition_end, NULL);
-#define PART_NAME "smartcross_userdata"
-
 
   bool creatable = false, exists = false;
 
@@ -88,10 +89,10 @@ int main() {
     fprintf(stderr, "Found existing user data partition, checking\n");
   }
 
-  fsck_ret = system("e2fsck -p /dev/disk/by-partlabel/" PART_NAME);
+  fsck_ret = system("e2fsck -p " PART_PATH);
   if (fsck_ret != 0 && fsck_ret != 1) {
     fprintf(stderr, "User data partition is not initialized or corrupt. Formatting now...\n");
-    mkfs_ret = system("mke2fs -t ext4 -F /dev/disk/by-partlabel/" PART_NAME);
+    mkfs_ret = system("mke2fs -t ext4 -F " PART_PATH);
     if (mkfs_ret != 0) {
       fprintf(stderr, "Failed to format partition\n");
       ret = 2;
