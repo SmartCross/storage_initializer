@@ -43,7 +43,7 @@ int main() {
   ped_unit_parse("2100MB", emmc, &user_partition_start, NULL);
   ped_unit_parse("3900MB", emmc, &user_partition_end, NULL);
 
-  bool creatable = false, exists = false;
+  bool creatable = false, exists = false, busy = false;
 
   for (part = ped_disk_next_partition (disk, NULL); part;
        part = ped_disk_next_partition (disk, part)) {
@@ -55,6 +55,7 @@ int main() {
     } else if (ped_partition_is_active(part)) {
       if (strcmp(ped_partition_get_name(part), PART_NAME) == 0) {
         exists = true;
+        busy = ped_partition_is_busy(part);
       }
     }
   }
@@ -85,17 +86,22 @@ int main() {
       goto done;
     }
   } else {
-    fprintf(stderr, "Found existing user data partition, checking\n");
+    if (!busy)
+      fprintf(stderr, "Found existing user data partition, checking\n");
+    else
+      fprintf(stderr, "Found mounted user data partition, exiting\n");
   }
 
-  fsck_ret = system("e2fsck -p " PART_PATH);
-  if (fsck_ret != 0 && fsck_ret != 1) {
-    fprintf(stderr, "User data partition is not initialized or corrupt. Formatting now...\n");
-    mkfs_ret = system("mke2fs -t ext4 -F " PART_PATH);
-    if (mkfs_ret != 0) {
-      fprintf(stderr, "Failed to format partition\n");
-      ret = 2;
-      goto done;
+  if (!busy) {
+    fsck_ret = system("e2fsck -p " PART_PATH);
+    if (fsck_ret != 0 && fsck_ret != 1) {
+      fprintf(stderr, "User data partition is not initialized or corrupt. Formatting now...\n");
+      mkfs_ret = system("mke2fs -t ext4 -F " PART_PATH);
+      if (mkfs_ret != 0) {
+        fprintf(stderr, "Failed to format partition\n");
+        ret = 2;
+        goto done;
+      }
     }
   }
 
