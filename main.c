@@ -104,7 +104,7 @@ int main() {
         goto done;
       }
       mount(PART_PATH, "/data", "ext4", MS_NOATIME, NULL);
-      system("cp -a /usr/data-skeleton /data");
+      system("tar x -z -f /usr/share/data-skeleton.tar.gz -C /data");
       umount(PART_PATH);
     }
   }
