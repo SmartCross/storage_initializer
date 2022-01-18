@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <parted/parted.h>
+#include <sys/mount.h>
 
 static PedExceptionOption
 exception_handler (PedException* ex)
@@ -102,6 +103,9 @@ int main() {
         ret = 2;
         goto done;
       }
+      mount(PART_PATH, "/data", "ext4", MS_NOATIME, NULL);
+      system("cp -a /usr/data-skeleton /data");
+      umount(PART_PATH);
     }
   }
 
