@@ -8,7 +8,8 @@ set(ENV{PKG_CONFIG_SYSROOT_DIR} ${CMAKE_SYSROOT})
 FIND_PACKAGE(PkgConfig REQUIRED)
 pkg_check_modules(LIBPARTED REQUIRED libparted)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_C_STANDARD 11)
 
 add_executable(smartcross_storage_initializer main.c)
 TARGET_LINK_LIBRARIES(smartcross_storage_initializer ${LIBPARTED_LIBRARIES})
+install(TARGETS smartcross_storage_initializer)
