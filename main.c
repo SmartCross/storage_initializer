@@ -94,6 +94,7 @@ int main() {
   }
 
   if (!busy) {
+    system("udevadm settle --exit-if-exists=" PART_PATH);
     fsck_ret = system("e2fsck -p " PART_PATH);
     if (fsck_ret != 0 && fsck_ret != 1) {
       fprintf(stderr, "User data partition is not initialized or corrupt. Formatting now...\n");
