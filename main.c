@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <parted/parted.h>
 #include <sys/mount.h>
+#include <unistd.h>
 
 static PedExceptionOption
 exception_handler (PedException* ex)
@@ -94,7 +95,12 @@ int main() {
   }
 
   if (!busy) {
-    system("udevadm settle --exit-if-exists=" PART_PATH);
+    while (access(PART_PATH, F_OK) != 0) {
+      // file does not exist
+      system("udevadm settle --exit-if-exists=" PART_PATH);
+      usleep(5000); // wait for 5ms
+    }
+
     fsck_ret = system("e2fsck -p " PART_PATH);
     if (fsck_ret != 0 && fsck_ret != 1) {
       fprintf(stderr, "User data partition is not initialized or corrupt. Formatting now...\n");
