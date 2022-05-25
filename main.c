@@ -24,7 +24,7 @@ int main() {
   int ret, fsck_ret, mkfs_ret;
   ped_exception_set_handler(exception_handler);
 
-  const char* dev_path  = "/dev/mmcblk0";
+  const char* dev_path  = "/dev/mmcblk2";
   PedDevice* emmc = ped_device_get(dev_path);
   if (!ped_device_open(emmc)) {
     fprintf(stderr, "Error opening %s!\n", dev_path);
@@ -32,12 +32,6 @@ int main() {
   }
 
   fprintf(stderr, "Model: %s (%d)\n", emmc->model, emmc->type);
-
-  if (strcmp(emmc->model, "MMC 4FTE4R") != 0) {
-    fprintf(stderr, "Wrong MMC model %s\n", emmc->model);
-    ped_device_destroy(emmc);
-    return 1;
-  }
 
   PedDisk* disk = ped_disk_new(emmc);
   PedPartition* part;
