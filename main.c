@@ -36,7 +36,7 @@ int main() {
   PedDisk* disk = ped_disk_new(emmc);
   PedPartition* part;
   PedSector user_partition_start, user_partition_end;
-  ped_unit_parse("2100MB", emmc, &user_partition_start, NULL);
+  ped_unit_parse("2200MB", emmc, &user_partition_start, NULL);
   ped_unit_parse("3900MB", emmc, &user_partition_end, NULL);
 
   bool creatable = false, exists = false, busy = false;
