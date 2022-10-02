@@ -10,6 +10,6 @@ pkg_check_modules(LIBPARTED REQUIRED libparted)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(smartcross_storage_initializer main.c)
+add_executable(smartcross_storage_initializer main.c ini.c license.c)
 TARGET_LINK_LIBRARIES(smartcross_storage_initializer ${LIBPARTED_LIBRARIES})
 install(TARGETS smartcross_storage_initializer)
