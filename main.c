@@ -120,6 +120,7 @@ int main(int argc, char *argv[]) {
        part = ped_disk_next_partition (disk, part)) {
     if (part->type & PED_PARTITION_FREESPACE) {
       if (part->geom.start < user_partition_start
+        && part->geom.end > user_partition_start
         && part->geom.end > user_partition_end) {
         if (user_partition_end == 0) {
           user_partition_end = part->geom.end;
@@ -136,7 +137,7 @@ int main(int argc, char *argv[]) {
 
   if (!exists) {
     if (creatable) {
-      fprintf(stderr, "Adding user data partition to GPT table\n");
+      fprintf(stderr, "Adding user data partition to GPT table, start = %d, end = %d\n", user_partition_start, user_partition_end);
       part = ped_partition_new (disk, PED_PARTITION_NORMAL, NULL, user_partition_start, user_partition_end);
       ped_partition_set_name(part, config.part_label);
       bool ok = ped_disk_add_partition(disk, part, ped_device_get_optimal_aligned_constraint(emmc));
