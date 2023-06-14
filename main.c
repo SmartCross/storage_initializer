@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  fprintf(stderr, "Disk model: \"%s\" (type %d)", emmc->model, emmc->type);
+  fprintf(stderr, "Disk model: \"%s\" (type %d)\n", emmc->model, emmc->type);
 
   PedDisk* disk = ped_disk_new(emmc);
   PedPartition* part;
@@ -111,14 +111,23 @@ int main(int argc, char *argv[]) {
   for (part = ped_disk_next_partition (disk, NULL); part;
        part = ped_disk_next_partition (disk, part)) {
     if (part->type & PED_PARTITION_FREESPACE) {
-      if (part->geom.start < user_partition_start
-        && part->geom.end > user_partition_start
-        && part->geom.end > user_partition_end) {
-        if (user_partition_end == 0) {
-          user_partition_end = part->geom.end;
-        }
-        creatable = true;
+      fprintf(stderr, "Found free space between %lld and %lld\n", part->geom.start, part->geom.end);
+      if (!(part->geom.start < user_partition_start)) {
+        fprintf(stderr, "Partition start (%lld) is located after specified start (%lld), unable to create partition here\n", part->geom.start, user_partition_start);
+        continue;
       }
+      if (!(part->geom.end > user_partition_start)) {
+        fprintf(stderr, "Partition end (%lld) is located before specified start (%lld), unable to create partition here\n", part->geom.end, user_partition_start);
+        continue;
+      }
+      if (!(part->geom.end > user_partition_end)) {
+        fprintf(stderr, "Partition end (%lld) is located after specified end (%lld), unable to create partition here\n", part->geom.end, user_partition_end);
+        continue;
+      }
+      if (user_partition_end == 0) {
+        user_partition_end = part->geom.end;
+      }
+      creatable = true;
     } else if (ped_partition_is_active(part)) {
       if (strcmp(ped_partition_get_name(part), config.part_label) == 0) {
         exists = true;
