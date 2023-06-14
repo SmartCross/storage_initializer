@@ -24,7 +24,6 @@ exception_handler (PedException* ex)
 typedef struct
 {
     const char* mmc_device;
-    const char* mmc_model;
     const char* space_start;
     const char* space_end;
     const char* skeleton;
@@ -40,8 +39,6 @@ static int handler(void* user, const char* section, const char* name,
     #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
     if (MATCH("initializer", "device")) {
       pconfig->mmc_device = strdup(value);
-    } else if (MATCH("initializer", "model")) {
-      pconfig->mmc_model = strdup(value);
     } else if (MATCH("initializer", "space_start")) {
       pconfig->space_start = strdup(value);
     } else if (MATCH("initializer", "space_end")) {
@@ -78,7 +75,6 @@ int main(int argc, char *argv[]) {
   }
 
   if (!config.mmc_device || 
-    !config.mmc_model ||
     !config.space_start || 
     !config.skeleton || 
     !config.part_label || 
@@ -94,11 +90,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  fprintf(stderr, "Model: %s (%d)\n", emmc->model, emmc->type);
-  if (strcmp(emmc->model, config.mmc_model) != 0) {
-    fprintf(stderr, "eMMC model mismatch (expected %s)\n", config.mmc_model);
-    return 2;
-  }
+  fprintf(stderr, "Disk model: \"%s\" (type %d)", emmc->model, emmc->type);
 
   PedDisk* disk = ped_disk_new(emmc);
   PedPartition* part;
