@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <parted/parted.h>
 #include <sys/mount.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "ini.h"
@@ -58,7 +59,7 @@ static int handler(void* user, const char* section, const char* name,
 void print_help();
 
 int main(int argc, char *argv[]) {
-  int ret, fsck_ret, mkfs_ret;
+  int ret, fsck_status, mkfs_status, fsck_ret;
   ped_exception_set_handler(exception_handler);
 
   configuration config;
@@ -183,18 +184,25 @@ int main(int argc, char *argv[]) {
       usleep(5000); // wait for 5ms
     }
 
-    fsck_ret = system(fsck_cmd);
-    if (fsck_ret != 0 && fsck_ret != 1) {
-      fprintf(stderr, "User data partition is not initialized or corrupt. Formatting now...\n");
-      mkfs_ret = system(mkfs_cmd);
-      if (mkfs_ret != 0) {
-        fprintf(stderr, "Failed to format partition\n");
-        ret = 2;
-        goto done;
+    fsck_status = system(fsck_cmd);
+    if (WIFEXITED(fsck_status)) {
+      fsck_ret = WEXITSTATUS(fsck_status);
+      if (fsck_ret != 0 && fsck_ret != 1) {
+        fprintf(stderr, "User data partition is not initialized or corrupt (fsck exit code %d). Formatting now...\n", fsck_ret);
+        mkfs_status = system(mkfs_cmd);
+        if (!WIFEXITED(mkfs_status) || WEXITSTATUS(mkfs_status) != 0) {
+          fprintf(stderr, "Failed to format partition\n");
+          ret = 2;
+          goto done;
+        }
+        mount(part_path, config.temp_mount_path, "ext4", MS_NOATIME, NULL);
+        system(skeleton_cmd);
+        umount(part_path);
       }
-      mount(part_path, config.temp_mount_path, "ext4", MS_NOATIME, NULL);
-      system(skeleton_cmd);
-      umount(part_path);
+    } else {
+      fprintf(stderr, "Unable to perform fsck, status = %d...\n", fsck_status);
+      ret = 2;
+      goto done;
     }
   }
 
